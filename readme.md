@@ -16,6 +16,8 @@ It does not write over files.
 use cpt::cpt;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+	let from = String::from("./example");
+	let to = String::from("./example_to");
 	let mut data = std::collections::HashMap::<String, String>::new();
 	data.insert("foo".to_string(), "bar".to_string());
 	cpt(from, to, &data)?;
