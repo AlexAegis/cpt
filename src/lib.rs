@@ -21,7 +21,7 @@ pub fn cp(from: String, to: String) -> Result<(), Box<dyn std::error::Error>> {
 pub fn cpt<K, V, S: std::hash::BuildHasher + Default>(
 	from: String,
 	to: String,
-	data: HashMap<K, V, S>,
+	data: &HashMap<K, V, S>,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize,
@@ -34,7 +34,7 @@ where
 fn cpt_inner<K, V, S: std::hash::BuildHasher + Default>(
 	from: String,
 	to: String,
-	data: Option<HashMap<K, V, S>>,
+	data: Option<&HashMap<K, V, S>>,
 ) -> Result<(), Box<dyn std::error::Error>>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize,

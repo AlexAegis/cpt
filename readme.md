@@ -1,5 +1,7 @@
 # cpt
 
+[![Build Status](https://travis-ci.com/AlexAegis/cpt.svg?branch=master)](https://travis-ci.com/AlexAegis/cpt) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3091464ea5954b7b813b6a1152831a84)](https://www.codacy.com/manual/AlexAegis/cpt?utm_source=github.com&utm_medium=referral&utm_content=AlexAegis/cpt&utm_campaign=Badge_Grade) [![Coverage Status](https://coveralls.io/repos/github/AlexAegis/cpt/badge.svg?branch=master)](https://coveralls.io/github/AlexAegis/cpt?branch=master)
+
 ## Copy with Templates
 
 Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebar]() and the `.tpl` file extension will then be stripped.
@@ -16,7 +18,7 @@ use cpt::cpt;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let mut data = std::collections::HashMap::<String, String>::new();
 	data.insert("foo".to_string(), "bar".to_string());
-	cpt(from, to, Some(&data))?;
+	cpt(from, to, &data)?;
 	Ok(())
 }
 ```
