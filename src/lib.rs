@@ -40,7 +40,6 @@ where
 	K: Hash + Eq + DeserializeOwned + Serialize,
 	V: Hash + Eq + DeserializeOwned + Serialize,
 {
-	let to_path = Path::new(&to);
 	let hb = Handlebars::new();
 	for entry in WalkDir::new(from).into_iter().filter_map(|e| e.ok()) {
 		let truncated_target = PathBuf::from(entry.path())
@@ -48,7 +47,7 @@ where
 			.skip_while(|c| c.as_os_str() == ".")
 			.skip(1)
 			.collect::<PathBuf>();
-		let mut target = to_path.join(&truncated_target);
+		let mut target = Path::new(&to).join(&truncated_target);
 		println!("Creating {:?}", &target);
 		if entry.path().is_dir() && !target.exists() {
 			DirBuilder::new().recursive(true).create(&target)?;
