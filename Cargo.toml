@@ -7,11 +7,10 @@ edition = "2018"
 repository = "https://github.com/AlexAegis/cpt"
 
 [dependencies]
-tokio = "0.2.0-alpha.6"
 clap = "*"
 walkdir = "*"
-async-std = "*"
 serde = "*"
+serde_json = "*"
 handlebars = "3.0.0-beta.1"
 
 [dev-dependencies]

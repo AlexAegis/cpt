@@ -1,25 +1,25 @@
-use async_std::fs;
-use async_std::fs::{DirBuilder, File};
-use async_std::prelude::*;
 use clap::{App, Arg};
 use handlebars::Handlebars;
 use serde::Serialize;
 use std::cmp::Eq;
 use std::collections::HashMap;
+use std::fs;
+use std::fs::{DirBuilder, File};
 use std::hash::BuildHasher;
 use std::hash::Hash;
+use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
-pub async fn cp(from: String, to: String) -> Result<(), Box<dyn std::error::Error>> {
-	cpt::<String, String, std::collections::hash_map::RandomState>(from, to, None).await
+pub fn cp(from: String, to: String) -> Result<(), Box<dyn std::error::Error>> {
+	cpt::<String, String, std::collections::hash_map::RandomState>(from, to, None)
 }
 /// Copy with templates
-pub async fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
+pub fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 	from: String,
 	to: String,
-	data: Option<&HashMap<K, V, S>>,
+	data: Option<HashMap<K, V, S>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
 	let to_path = Path::new(&to);
 	let hb = Handlebars::new();
@@ -36,10 +36,10 @@ pub async fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 
 		let mut target = to_path.join(&truncated_target);
 		if entry.path().is_dir() && !target.exists() {
-			DirBuilder::new().recursive(true).create(&target).await?;
+			DirBuilder::new().recursive(true).create(&target)?;
 		} else if entry.path().is_file() && !target.exists() {
-			let mut content = fs::read_to_string(entry.path()).await?;
-			if let Some(map) = data {
+			let mut content = fs::read_to_string(entry.path())?;
+			if let Some(map) = &data {
 				if let Some(e) = target.extension() {
 					// Use only tpl files as templates
 					if e.to_str().ok_or("Error")? == "tpl" {
@@ -48,15 +48,16 @@ pub async fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 					}
 				}
 			}
-			let mut file = File::create(target).await?;
-			file.write_all(content.as_bytes()).await?;
-			file.sync_all().await?;
+			let mut file = File::create(target)?;
+			file.write_all(content.as_bytes())?;
+			file.sync_all()?;
 		}
 	}
 	Ok(())
 }
 
-pub fn args() -> Result<(String, String), Box<dyn std::error::Error>> {
+pub fn args(
+) -> Result<(String, String, Option<HashMap<String, String>>), Box<dyn std::error::Error>> {
 	let m = App::new("mirror-folder")
 		.version("1.0.0")
 		.about("Copies one folder structure to another place with files. Also formats templates!")
@@ -84,6 +85,19 @@ pub fn args() -> Result<(String, String), Box<dyn std::error::Error>> {
 				.index(2)
 				.help("The folder where the folder will be placed"),
 		)
+		.arg(
+			Arg::with_name("data")
+				.short("d")
+				.long("data")
+				.index(3)
+				.validator(
+					|s| match serde_json::from_str::<HashMap<String, String>>(&s) {
+						Ok(_) => Ok(()),
+						Err(e) => Err(e.to_string()),
+					},
+				)
+				.help("JSON formatted templating data"),
+		)
 		.get_matches();
 
 	let from = m.args["from"]
@@ -99,5 +113,12 @@ pub fn args() -> Result<(String, String), Box<dyn std::error::Error>> {
 		.to_str()
 		.ok_or("Invalid string")?;
 
-	Ok((from.to_string(), to.to_string()))
+	let mut data_map = None;
+
+	if let Some(d) = m.args["data"].vals.first() {
+		let data_str = d.to_str().ok_or("Invalid string")?;
+		data_map.replace(serde_json::from_str::<HashMap<String, String>>(&data_str)?);
+	}
+
+	Ok((from.to_string(), to.to_string(), data_map))
 }
