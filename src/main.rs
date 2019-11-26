@@ -1,14 +1,16 @@
 use cpt::args;
 
-use cpt::cpt;
+use cpt::{cp, cpt};
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let (from, to, data) = args()?;
 	print!("Copying from {}, to {}", from, to);
-	if let Some(d) = &data {
+	if let Some(d) = data {
 		println!(" with data: {:?}", &d);
+		cpt(from, to, d)?;
+	} else {
+		cp(from, to)?;
 	}
 	println!();
-	cpt(from, to, data)?;
 	Ok(())
 }

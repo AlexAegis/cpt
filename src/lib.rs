@@ -13,10 +13,19 @@ use std::path::PathBuf;
 use walkdir::WalkDir;
 
 pub fn cp(from: String, to: String) -> Result<(), Box<dyn std::error::Error>> {
-	cpt::<String, String, std::collections::hash_map::RandomState>(from, to, None)
+	cpt_inner::<String, String, std::collections::hash_map::RandomState>(from, to, None)
 }
-/// Copy with templates
+
 pub fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
+	from: String,
+	to: String,
+	data: HashMap<K, V, S>,
+) -> Result<(), Box<dyn std::error::Error>> {
+	cpt_inner(from, to, Some(data))
+}
+
+/// Copy with templates
+fn cpt_inner<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 	from: String,
 	to: String,
 	data: Option<HashMap<K, V, S>>,
@@ -31,6 +40,7 @@ pub fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 			.collect::<PathBuf>();
 		let mut target = to_path.join(&truncated_target);
 		println!("Creating {:?}", &target);
+		println!("adata {:?}", data.is_some());
 		if entry.path().is_dir() && !target.exists() {
 			DirBuilder::new().recursive(true).create(&target)?;
 		} else if entry.path().is_file() && !target.exists() {
@@ -38,6 +48,7 @@ pub fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 			if let Some(map) = &data {
 				if let Some(e) = target.extension() {
 					// Use only tpl files as templates
+					println!("ext {:?}", e.to_str());
 					if e.to_str().ok_or("Error")? == "tpl" {
 						target.set_extension(""); // And strip the extension
 						content = hb.render_template(&content, &map)?;
@@ -82,10 +93,10 @@ pub fn args(
 				.help("The folder where the folder will be placed"),
 		)
 		.arg(
-			Arg::with_name("data")
-				.short("d")
-				.long("data")
-				.index(3)
+			Arg::with_name("json")
+				.short("-j")
+				.long("--json")
+				.takes_value(true)
 				.validator(
 					|s| match serde_json::from_str::<HashMap<String, String>>(&s) {
 						Ok(_) => Ok(()),
@@ -93,13 +104,6 @@ pub fn args(
 					},
 				)
 				.help("JSON formatted templating data"),
-		)
-		.arg(
-			Arg::with_name("workspace")
-				.short("-w")
-				.long("--workspace")
-				.takes_value(true)
-				.help("VS Code Debug argument"),
 		)
 		.get_matches();
 
@@ -117,9 +121,8 @@ pub fn args(
 		.ok_or("Invalid string")?;
 
 	let mut data_map = None;
-
-	if m.args.contains_key("data") {
-		if let Some(d) = m.args["data"].vals.first() {
+	if m.args.contains_key("json") {
+		if let Some(d) = m.args["json"].vals.first() {
 			let data_str = d.to_str().ok_or("Invalid string")?;
 			data_map.replace(serde_json::from_str::<HashMap<String, String>>(&data_str)?);
 		}
