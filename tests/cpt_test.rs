@@ -1,6 +1,4 @@
-use cpt::cpt;
 use std::fs;
-use std::{thread, time};
 
 use assert_cmd::prelude::*;
 use std::process::Command;
