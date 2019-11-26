@@ -1,0 +1,28 @@
+[package]
+name = "cpt"
+version = "0.1.0"
+authors = ["AlexAegis <alexaegis@gmail.com>"]
+license = "mit"
+edition = "2018"
+repository = "https://github.com/AlexAegis/cpt"
+
+[dependencies]
+tokio = "0.2.0-alpha.6"
+clap = "*"
+walkdir = "*"
+async-std = "*"
+serde = "*"
+handlebars = "3.0.0-beta.1"
+
+[dev-dependencies]
+clippy = "*"
+
+[lib]
+name = "cpt"
+doc = true
+
+[profile.release]
+overflow-checks = true
+
+[profile.dev]
+opt-level = 3

@@ -1,0 +1,30 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "cppvsdbg",
+			"request": "launch",
+			"name": "Current Rust Cargo",
+			"program": "cargo",
+			"args": ["run", "--", "--workspace", "${workspaceFolder}"],
+			"cwd": "${fileDirname}",
+			"symbolSearchPath": "${workspaceFolder}\\target\\debug",
+			"preLaunchTask": "cargo build",
+			"internalConsoleOptions": "openOnSessionStart" // Focus the Debug Console on run
+		},
+		{
+			"type": "cppvsdbg",
+			"request": "launch",
+			"name": "Current Rust Cargo As Release",
+			"program": "cargo",
+			"args": ["run", "--release", "--", "--workspace", "${workspaceFolder}"],
+			"cwd": "${fileDirname}",
+			"symbolSearchPath": "${workspaceFolder}\\target\\debug",
+			"preLaunchTask": "cargo build",
+			"internalConsoleOptions": "openOnSessionStart" // Focus the Debug Console on run
+		}
+	]
+}

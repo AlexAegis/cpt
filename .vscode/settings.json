@@ -1,0 +1,20 @@
+{
+	"editor.formatOnSave": true,
+	"editor.autoIndent": true,
+	"editor.quickSuggestions": true,
+	"editor.tabSize": 4,
+	"material-icon-theme.folders.associations": {
+		"rust": "delta",
+		"benches": "benchmark"
+	},
+	"editor.codeActionsOnSave": {
+		"source.fixAll": true
+	},
+	"editor.mouseWheelZoom": true,
+	"files.associations": { ".mocharc": "json" },
+	"rust.build_on_save": true,
+	"rust.clippy_preference": "on",
+	"rust.racer_completion": true,
+	"rust.show_hover_context": true,
+	"editor.wordBasedSuggestions": false
+}
