@@ -16,7 +16,7 @@ fn cpt_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 	assert_eq!(
 		fs::read_to_string("./example_to/foo/non-template.txt")?.replace("\r\n", "\n"),
-		"unused: {{unused}}\n"
+		"unused: {{unused}}"
 	);
 	Ok(())
 }
