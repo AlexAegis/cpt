@@ -7,10 +7,10 @@ edition = "2018"
 repository = "https://github.com/AlexAegis/cpt"
 
 [dependencies]
-clap = "*"
-walkdir = "*"
-serde = "*"
-serde_json = "*"
+clap = "2.33.0"
+walkdir = "2.2.9"
+serde = "1.0.103"
+serde_json = "1.0.42"
 handlebars = "3.0.0-beta.1"
 
 [dev-dependencies]

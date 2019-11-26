@@ -2,7 +2,7 @@
 
 ## Copy with Templates
 
-Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebar]() and the `.tpl` extension will then be strippet.
+Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebar]() and the `.tpl` file extension will then be stripped.
 
 It does not write over files.
 
@@ -26,6 +26,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```bash
 cpt ./example ./exampletest --json='{ \"foo\": \"bar\" }'
 ```
+
+From the command line it can only accept jsons with a depth of 1.
+
+In short, this is invalid: `--json='{ \"foo\": { \"inner\": \"bar\" } }'`
 
 ```bash
 cpt --help
