@@ -18,5 +18,8 @@ fn cpt_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 		fs::read_to_string("./example_to/foo/non-template.txt")?.replace("\r\n", "\n"),
 		"unused: {{unused}}"
 	);
+
+	// Cleanup
+	fs::remove_dir_all("./example_to")?;
 	Ok(())
 }
