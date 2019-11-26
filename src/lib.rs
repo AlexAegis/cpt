@@ -40,7 +40,6 @@ fn cpt_inner<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 			.collect::<PathBuf>();
 		let mut target = to_path.join(&truncated_target);
 		println!("Creating {:?}", &target);
-		println!("adata {:?}", data.is_some());
 		if entry.path().is_dir() && !target.exists() {
 			DirBuilder::new().recursive(true).create(&target)?;
 		} else if entry.path().is_file() && !target.exists() {
@@ -48,7 +47,6 @@ fn cpt_inner<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 			if let Some(map) = &data {
 				if let Some(e) = target.extension() {
 					// Use only tpl files as templates
-					println!("ext {:?}", e.to_str());
 					if e.to_str().ok_or("Error")? == "tpl" {
 						target.set_extension(""); // And strip the extension
 						content = hb.render_template(&content, &map)?;
