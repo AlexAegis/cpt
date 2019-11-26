@@ -23,18 +23,14 @@ pub fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 ) -> Result<(), Box<dyn std::error::Error>> {
 	let to_path = Path::new(&to);
 	let hb = Handlebars::new();
-	for entry in WalkDir::new(from)
-		.into_iter()
-		.skip(1) // Skip the root folder
-		.filter_map(|e| e.ok())
-	{
+	for entry in WalkDir::new(from).into_iter().filter_map(|e| e.ok()) {
 		let truncated_target = PathBuf::from(entry.path())
 			.components()
 			.skip_while(|c| c.as_os_str() == ".")
 			.skip(1)
 			.collect::<PathBuf>();
-
 		let mut target = to_path.join(&truncated_target);
+		println!("Creating {:?}", &target);
 		if entry.path().is_dir() && !target.exists() {
 			DirBuilder::new().recursive(true).create(&target)?;
 		} else if entry.path().is_file() && !target.exists() {
@@ -98,6 +94,13 @@ pub fn args(
 				)
 				.help("JSON formatted templating data"),
 		)
+		.arg(
+			Arg::with_name("workspace")
+				.short("-w")
+				.long("--workspace")
+				.takes_value(true)
+				.help("VS Code Debug argument"),
+		)
 		.get_matches();
 
 	let from = m.args["from"]
@@ -115,9 +118,11 @@ pub fn args(
 
 	let mut data_map = None;
 
-	if let Some(d) = m.args["data"].vals.first() {
-		let data_str = d.to_str().ok_or("Invalid string")?;
-		data_map.replace(serde_json::from_str::<HashMap<String, String>>(&data_str)?);
+	if m.args.contains_key("data") {
+		if let Some(d) = m.args["data"].vals.first() {
+			let data_str = d.to_str().ok_or("Invalid string")?;
+			data_map.replace(serde_json::from_str::<HashMap<String, String>>(&data_str)?);
+		}
 	}
 
 	Ok((from.to_string(), to.to_string(), data_map))
