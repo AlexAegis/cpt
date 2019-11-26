@@ -1,35 +1,45 @@
 use clap::{App, Arg};
 use handlebars::Handlebars;
-use serde::Serialize;
-use std::cmp::Eq;
-use std::collections::HashMap;
-use std::fs;
-use std::fs::{DirBuilder, File};
-use std::hash::BuildHasher;
-use std::hash::Hash;
-use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
+use serde::{de::DeserializeOwned, Serialize};
+use std::{
+	cmp::Eq,
+	collections::HashMap,
+	error::Error,
+	fs,
+	fs::{DirBuilder, File},
+	hash::Hash,
+	io::Write,
+	path::{Path, PathBuf},
+};
+
 use walkdir::WalkDir;
 
 pub fn cp(from: String, to: String) -> Result<(), Box<dyn std::error::Error>> {
 	cpt_inner::<String, String, std::collections::hash_map::RandomState>(from, to, None)
 }
 
-pub fn cpt<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
+pub fn cpt<K, V, S: std::hash::BuildHasher + Default>(
 	from: String,
 	to: String,
 	data: HashMap<K, V, S>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>>
+where
+	K: Hash + Eq + DeserializeOwned + Serialize,
+	V: Hash + Eq + DeserializeOwned + Serialize,
+{
 	cpt_inner(from, to, Some(data))
 }
 
 /// Copy with templates
-fn cpt_inner<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
+fn cpt_inner<K, V, S: std::hash::BuildHasher + Default>(
 	from: String,
 	to: String,
 	data: Option<HashMap<K, V, S>>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>>
+where
+	K: Hash + Eq + DeserializeOwned + Serialize,
+	V: Hash + Eq + DeserializeOwned + Serialize,
+{
 	let to_path = Path::new(&to);
 	let hb = Handlebars::new();
 	for entry in WalkDir::new(from).into_iter().filter_map(|e| e.ok()) {
@@ -61,8 +71,13 @@ fn cpt_inner<K: Hash + Serialize + Eq, V: Serialize, S: BuildHasher>(
 	Ok(())
 }
 
-pub fn args(
-) -> Result<(String, String, Option<HashMap<String, String>>), Box<dyn std::error::Error>> {
+pub type Args<K, V> = (String, String, Option<HashMap<K, V>>);
+
+pub fn args<K, V>() -> Result<Args<K, V>, Box<dyn Error>>
+where
+	K: Hash + Eq + DeserializeOwned,
+	V: Hash + Eq + DeserializeOwned,
+{
 	let m = App::new("mirror-folder")
 		.version("1.0.0")
 		.about("Copies one folder structure to another place with files. Also formats templates!")
@@ -95,12 +110,10 @@ pub fn args(
 				.short("-j")
 				.long("--json")
 				.takes_value(true)
-				.validator(
-					|s| match serde_json::from_str::<HashMap<String, String>>(&s) {
-						Ok(_) => Ok(()),
-						Err(e) => Err(e.to_string()),
-					},
-				)
+				.validator(|s| match serde_json::from_str::<HashMap<K, V>>(&s) {
+					Ok(_) => Ok(()),
+					Err(e) => Err(e.to_string()),
+				})
 				.help("JSON formatted templating data"),
 		)
 		.get_matches();
@@ -122,7 +135,7 @@ pub fn args(
 	if m.args.contains_key("json") {
 		if let Some(d) = m.args["json"].vals.first() {
 			let data_str = d.to_str().ok_or("Invalid string")?;
-			data_map.replace(serde_json::from_str::<HashMap<String, String>>(&data_str)?);
+			data_map.replace(serde_json::from_str::<HashMap<K, V>>(&data_str)?);
 		}
 	}
 
