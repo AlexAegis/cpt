@@ -94,6 +94,7 @@ jobs:
                   args: --all -- -D warnings
     docs:
         name: Docs
+        needs: [test, fmt, clippy]
         runs-on: ubuntu-latest
         env:
             RUST_BACKTRACE: full
@@ -112,11 +113,10 @@ jobs:
               with:
                   command: doc
                   args: --all-features
-            - name: Publish documentation
-                  run: |
-                       cd target/doc
-                       git init
-                       git add .
-                       git -c user.name='ci' -c user.email='ci' commit -m 'Deploy documentation'
-                       git push -f -q https://git:${{ secrets.github_token }}@github.com/${{ github.repository }} HEAD:gh-pages
-                       if: github.event_name == 'push' && github.event.ref == 'refs/heads/master' && github.repository == 'AlexAegis/cpt'
+            - run: |
+                  cd target/doc
+                  git init
+                  git add .
+                  git -c user.name='ci' -c user.email='ci' commit -m 'Deploy documentation'
+                  git push -f -q https://git:${{ secrets.github_token }}@github.com/${{ github.repository }} HEAD:gh-pages
+                  if: github.event_name == 'push' && github.event.ref == 'refs/heads/master' && github.repository == 'AlexAegis/cpt'
