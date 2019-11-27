@@ -77,7 +77,7 @@ where
 		let targets: Vec<PathBuf>;
 
 		if let Some(map) = &data {
-			let rs = target
+			targets = target
 				.components()
 				.map(|c| c.as_os_str().to_string_lossy().into_owned())
 				.map(|c| {
@@ -116,11 +116,8 @@ where
 				})
 				.into_iter()
 				.map(|v| v.join(MAIN_SEPARATOR.to_string().as_str()))
-				.collect::<Vec<String>>();
-
-			println!("rs {:?}", &rs);
-
-			targets = vec![target];
+				.map(PathBuf::from)
+				.collect::<Vec<PathBuf>>();
 		} else {
 			targets = vec![target];
 		}
