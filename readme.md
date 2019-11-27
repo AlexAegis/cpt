@@ -143,7 +143,7 @@ ARGS:
 
 ## Motivation
 
-I made this for an [Advent of Code](https://www.adventofcode.com) project scaffolder which you can find in my [AoC repo](https://github.com/AlexAegis/advent-of-code).
+I made this for my [Advent of Code](https://www.adventofcode.com) project scaffolder which you can find in my [AoC repo](https://github.com/AlexAegis/advent-of-code).
 
 ## Used libraries
 
