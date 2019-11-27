@@ -2,32 +2,56 @@ use clap::{App, Arg};
 use handlebars::Handlebars;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{
+	cmp,
 	cmp::Eq,
-	collections::HashMap,
+	collections::{hash_map::RandomState, HashMap},
 	error::Error,
 	fs,
 	fs::{DirBuilder, File},
 	hash::Hash,
 	io::Write,
-	path::{Path, PathBuf},
+	path::{Path, PathBuf, MAIN_SEPARATOR},
+	vec::Vec,
 };
 
 use walkdir::WalkDir;
 
-pub fn cp(from: String, to: String) -> Result<(), Box<dyn std::error::Error>> {
-	cpt_inner::<String, String, std::collections::hash_map::RandomState>(from, to, None)
+pub struct CptConfig {
+	/// Does not write anything to the disk, just logs
+	dry: bool,
+	/// Allows overwriteing existing files
+	force: bool,
+}
+
+impl Default for CptConfig {
+	fn default() -> Self {
+		CptConfig {
+			dry: true,
+			force: false,
+		}
+	}
+}
+
+impl CptConfig {
+	pub fn new(dry: bool, force: bool) -> Self {
+		CptConfig { dry, force }
+	}
+}
+
+pub fn cp(from: String, to: String) -> Result<(), Box<dyn Error>> {
+	cpt_inner::<String, String, RandomState>(from, to, None, CptConfig::default())
 }
 
 pub fn cpt<K, V, S: std::hash::BuildHasher + Default>(
 	from: String,
 	to: String,
 	data: &HashMap<K, V, S>,
-) -> Result<(), Box<dyn std::error::Error>>
+) -> Result<(), Box<dyn Error>>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize,
 	V: Hash + Eq + DeserializeOwned + Serialize,
 {
-	cpt_inner(from, to, Some(data))
+	cpt_inner(from, to, Some(data), CptConfig::default())
 }
 
 /// Copy with templates
@@ -35,7 +59,8 @@ fn cpt_inner<K, V, S: std::hash::BuildHasher + Default>(
 	from: String,
 	to: String,
 	data: Option<&HashMap<K, V, S>>,
-) -> Result<(), Box<dyn std::error::Error>>
+	config: CptConfig,
+) -> Result<(), Box<dyn Error>>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize,
 	V: Hash + Eq + DeserializeOwned + Serialize,
@@ -47,24 +72,88 @@ where
 			.skip_while(|c| c.as_os_str() == ".")
 			.skip(1)
 			.collect::<PathBuf>();
-		let mut target = Path::new(&to).join(&truncated_target);
-		println!("Creating {:?}", &target);
-		if entry.path().is_dir() && !target.exists() {
-			DirBuilder::new().recursive(true).create(&target)?;
-		} else if entry.path().is_file() && !target.exists() {
-			let mut content = fs::read_to_string(entry.path())?;
-			if let Some(map) = &data {
-				if let Some(e) = target.extension() {
-					// Use only tpl files as templates
-					if e.to_str().ok_or("Error")? == "tpl" {
-						target.set_extension(""); // And strip the extension
-						content = hb.render_template(&content, &map)?;
+		let target = Path::new(&to).join(&truncated_target);
+
+		let targets: Vec<PathBuf>;
+
+		if let Some(map) = &data {
+			let rs = target
+				.components()
+				.map(|c| c.as_os_str().to_string_lossy().into_owned())
+				.map(|c| {
+					println!("component before template {:?}", c);
+					c
+				})
+				.map(|c| {
+					hb.render_template(&c, &map)
+						.unwrap_or_else(|_| c.to_string())
+				})
+				.map(|c| {
+					println!("component after template {:?}", c);
+					c
+				})
+				.map(|c| c.lines().map(|l| l.to_string()).collect::<Vec<String>>())
+				.fold(vec![], |acc: Vec<Vec<String>>, n| {
+					println!("acc {:?}, \n\t\tnext {:?}", &acc, &n);
+
+					let acc_l = acc.len();
+					let n_l = n.len();
+					let mut b = std::iter::repeat(acc)
+						.take(n.len())
+						.flatten()
+						.collect::<Vec<Vec<String>>>();
+
+					let b_l = cmp::max(n_l, 1) * cmp::max(acc_l, 1);
+					b.resize_with(b_l, || vec![]);
+
+					std::iter::repeat(n)
+						.flatten()
+						.take(b.len())
+						.enumerate()
+						.for_each(|(i, ne)| {
+							if let Some(e) = b.get_mut((i + n_l) % b_l) {
+								e.push(ne);
+							}
+						});
+
+					b
+				})
+				.into_iter()
+				.map(|v| v.join(MAIN_SEPARATOR.to_string().as_str()))
+				.collect::<Vec<String>>();
+
+			println!("rs {:?}", &rs);
+
+			targets = vec![target];
+		} else {
+			targets = vec![target];
+		}
+
+		println!("Creating {:?}", &targets);
+
+		for mut trg in targets {
+			if entry.path().is_dir() && !trg.exists() {
+				if !config.dry {
+					DirBuilder::new().recursive(true).create(&trg)?;
+				}
+			} else if entry.path().is_file() && (!trg.exists() || config.force) {
+				// TODO: Test force mode
+				let mut content = fs::read_to_string(entry.path())?;
+				if let Some(map) = &data {
+					if let Some(e) = trg.extension() {
+						// Use only tpl files as templates
+						if e.to_str().ok_or("Error")? == "tpl" {
+							trg.set_extension(""); // And strip the extension
+							content = hb.render_template(&content, &map)?;
+						}
 					}
 				}
+				if !config.dry {
+					let mut file = File::create(trg)?;
+					file.write_all(content.as_bytes())?;
+					file.sync_all()?;
+				}
 			}
-			let mut file = File::create(target)?;
-			file.write_all(content.as_bytes())?;
-			file.sync_all()?;
 		}
 	}
 	Ok(())

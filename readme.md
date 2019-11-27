@@ -6,7 +6,9 @@
 
 Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebars](https://github.com/wycats/handlebars.js/) and the `.tpl` file extension will then be stripped.
 
-It does not write over files.
+It does not write over existing files.
+
+Folder names also support Handlebars syntaxs, here every new line in the name means a different path calculated from there.
 
 ## Install
 
@@ -14,7 +16,7 @@ It does not write over files.
 
 ```toml
 [dependencies]
-cpt = "0.2.2"
+cpt = "0.3.0"
 ```
 
 ### As a command line tool
