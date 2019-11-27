@@ -17,25 +17,29 @@ use std::{
 use walkdir::WalkDir;
 
 #[derive(Debug, Hash, Serialize, Deserialize, PartialEq, Eq)]
-pub enum Vals {
-	Strlike(String),
-	Veclike(Vec<String>),
+#[serde(untagged)]
+pub enum StringOrVecString {
+	Str(String),
+	VecStr(Vec<String>),
 }
 
-impl<'de> Deserialize<'de> for Vals {
-	fn deserialize<D>(deserializer: D) -> Result<String, D::Error>
-	where
-		D: Deserializer<'de>,
-	{
-		deserializer.de(I32Visitor)
+impl Into<StringOrVecString> for String {
+	fn into(self) -> StringOrVecString {
+		StringOrVecString::Str(self)
+	}
+}
+
+impl Into<StringOrVecString> for Vec<String> {
+	fn into(self) -> StringOrVecString {
+		StringOrVecString::VecStr(self)
 	}
 }
 
 #[derive(Debug)]
-pub struct Cpt<K = String, V = Vals, S = RandomState>
+pub struct Cpt<K = String, V = StringOrVecString, S = RandomState>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
-	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	V: Hash + Eq + DeserializeOwned + Serialize + Debug + Into<StringOrVecString>,
 	S: std::hash::BuildHasher + Default,
 {
 	pub from: String,
@@ -48,7 +52,7 @@ where
 impl<K, V, S> Cpt<K, V, S>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
-	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	V: Hash + Eq + DeserializeOwned + Serialize + Debug + Into<StringOrVecString>,
 	S: std::hash::BuildHasher + Default + Debug,
 {
 	pub fn new(from: String, to: String) -> Self {
@@ -119,7 +123,8 @@ where
 						hb.render_template(&c, &map)
 							.unwrap_or_else(|_| c.to_string())
 					})
-					.map(|c| c.lines().map(|l| l.to_string()).collect::<Vec<String>>())
+					.map(|c| c.trim_matches(|c| c == '[' || c == ']').replace(", ", "\n")) // Serialized array
+					.map(|c| c.lines().map(|l| l.to_string()).collect::<Vec<String>>()) // Newline separation
 					.fold(vec![], |acc: Vec<Vec<String>>, n| {
 						let acc_l = acc.len();
 						let n_l = n.len();
@@ -192,7 +197,7 @@ where
 impl<K, V, S> Default for Cpt<K, V, S>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
-	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	V: Hash + Eq + DeserializeOwned + Serialize + Debug + Into<StringOrVecString>,
 	S: BuildHasher + Default,
 {
 	fn default() -> Self {
