@@ -2,7 +2,7 @@
 name = "cpt"
 version = "0.2.0"
 authors = ["AlexAegis <alexaegis@gmail.com>"]
-license = "mit"
+license = "MIT"
 edition = "2018"
 repository = "https://github.com/AlexAegis/cpt"
 description = """
