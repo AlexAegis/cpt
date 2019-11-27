@@ -77,10 +77,10 @@ I made this for an [Advent of Code](https://www.adventofcode.com) project scaffo
 ## Used libraries
 
 -   [Handlebars](https://github.com/sunng87/handlebars-rust)
-    > Templating
+    > Templating engine
 -   [Walkdir](https://github.com/BurntSushi/walkdir)
-    > Iterating through folders
+    > Recursive directory walker
 -   [Clap](https://github.com/clap-rs/clap)
-    > Command line arguments
+    > Command line arguments parser
 -   [Serde](https://github.com/serde-rs/serde)
-    > Json parsing
+    > Serializer, deserializer. Here used for [JSON](http://www.json.org/) parsing
