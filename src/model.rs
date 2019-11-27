@@ -1,8 +1,8 @@
 use handlebars::Handlebars;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{
 	cmp,
-	cmp::Eq,
+	cmp::{Eq, PartialEq},
 	collections::{hash_map::RandomState, HashMap},
 	error::Error,
 	fmt::Debug,
@@ -16,8 +16,23 @@ use std::{
 
 use walkdir::WalkDir;
 
+#[derive(Debug, Hash, Serialize, Deserialize, PartialEq, Eq)]
+pub enum Vals {
+	Strlike(String),
+	Veclike(Vec<String>),
+}
+
+impl<'de> Deserialize<'de> for Vals {
+	fn deserialize<D>(deserializer: D) -> Result<String, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		deserializer.de(I32Visitor)
+	}
+}
+
 #[derive(Debug)]
-pub struct Cpt<K, V, S = RandomState>
+pub struct Cpt<K = String, V = Vals, S = RandomState>
 where
 	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
 	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
