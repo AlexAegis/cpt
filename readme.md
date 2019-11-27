@@ -76,21 +76,26 @@ In short, this is invalid: `--json='{ \"foo\": { \"inner\": \"bar\" } }'`
 ```bash
 cpt --help
 
+cpt 0.3.0
+AlexAegis
 Copies one folder structure to another place with files. Also formats templates!
 
 USAGE:
-    cpt.exe [OPTIONS] <from> <to>
+    cpt.exe [FLAGS] [OPTIONS] <from> <to>
 
 FLAGS:
+    -d, --dry        If set, nothing will be written to the disk
+    -f, --force      If set, files can be overwritten in the target folder
     -h, --help       Prints help information
+    -q, --quiet      Tarpaulin
     -V, --version    Prints version information
 
 OPTIONS:
     -j, --json <json>    JSON formatted templating data
 
 ARGS:
-    <from>    The folder that will be copied
-    <to>      The folder where the folder will be placed
+    <from>    The folder that will be copied [default: .]
+    <to>      The folder where the folder will be placed [default: ./target]
 ```
 
 ## Reason
