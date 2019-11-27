@@ -6,7 +6,12 @@ license = "MIT"
 edition = "2018"
 repository = "https://github.com/AlexAegis/cpt"
 readme="README.md"
-
+description = """
+A filesystem tool that will copy a folder structure
+and if there is provided templating data
+when it encounders any `.tpl` files, it tries to
+fill it using Handlebar syntax and prints out
+the transformed version."""
 
 [dependencies]
 clap = "2.33.0"
