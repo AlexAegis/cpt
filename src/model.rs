@@ -147,7 +147,7 @@ where
 						DirBuilder::new().recursive(true).create(&trg)?;
 					}
 				} else if entry.path().is_file() {
-					if let Ok(mut content) = fs::read_to_string(entry.path()) {
+					let c: Vec<u8> = if let Ok(mut content) = fs::read_to_string(entry.path()) {
 						if let Some(map) = &self.data {
 							if let Some(e) = trg.extension() {
 								// Use only tpl files as templates
@@ -157,18 +157,15 @@ where
 								}
 							}
 						}
-						if !self.dry && (!trg.exists() || self.force) {
-							let mut file = File::create(trg)?;
-							file.write_all(content.as_bytes())?;
-							file.sync_all()?;
-						}
+						content.bytes().collect()
 					} else {
-						let content = fs::read(entry.path())?;
-						if !self.dry && (!trg.exists() || self.force) {
-							let mut file = File::create(trg)?;
-							file.write_all(content.as_slice())?;
-							file.sync_all()?;
-						}
+						fs::read(entry.path())?
+					};
+
+					if !self.dry && (!trg.exists() || self.force) {
+						let mut file = File::create(trg)?;
+						file.write_all(c.as_slice())?;
+						file.sync_all()?;
 					}
 				}
 			}
