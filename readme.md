@@ -4,7 +4,7 @@
 
 ## Copy with Templates
 
-Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebar]() and the `.tpl` file extension will then be stripped.
+Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebars](https://github.com/wycats/handlebars.js/) and the `.tpl` file extension will then be stripped.
 
 It does not write over files.
 
@@ -14,7 +14,7 @@ It does not write over files.
 
 ```toml
 [dependencies]
-cpt = "0.2.1"
+cpt = "0.2.2"
 ```
 
 ### As a command line tool
