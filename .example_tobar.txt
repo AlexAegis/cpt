@@ -1,2 +1,0 @@
-This will become bar: bar
-And this will stay as is: {{escaped}}
