@@ -8,11 +8,13 @@ Copies a folder structure and if templating data is supplied then all `.tpl` fil
 
 It does not write over existing files, unless the `-f` or `--force` flag is present.
 
-Folder and file names also support Handlebars syntax. (Altough you can't use `\` and many others in folder names so you are limited). After applying the template into the file
+It can be run `dry` which will skip any file writes, but still logs what would it do. Use the `-d` or `--dry` flags.
 
-here every new line in the name means a different path calculated from there.
+Folder and file names also support Handlebars syntax. (Although you can't use `\` and many others in folder names so you are limited). After applying the template into the file/folder names, `\n` characters (since they invalid anyway) will be handled specially. At every line break the created folder structure branches off. The content of each of them will be identical.
 
-For example, with this data
+#### For example, with this data:
+
+> The second line will be serialized as "file1.txt.tpl\nfile2.txt.tpl"
 
 ```json
 {
@@ -48,7 +50,7 @@ these output files and folders will be produced
 You can try this out with this command after downloading this repository (Given that you have [Rust and Cargo](https://www.rust-lang.org/) installed):
 
 ```bash
-cargo run ./templates/example_tpl_dir ./templates/example_to --json='{ \"foo\": \"bar\", \"dir\": \"dir1\ndir2\", \"file\": \"file1.txt.tpl\nfile2.txt.tpl\" }'
+cargo run ./templates/example_tpl_dir ./templates/example_to --json='{ \"file2\": \"bar\nbare\", \"dir\": \"dir1\ndir2\", \"file\": [\"file1.txt.tpl\", \"file2.txt.tpl\"] }'
 ```
 
 ## Install
@@ -139,7 +141,7 @@ ARGS:
     <to>      The folder where the folder will be placed [default: ./target]
 ```
 
-## Reason
+## Motivation
 
 I made this for an [Advent of Code](https://www.adventofcode.com) project scaffolder which you can find in my [AoC repo](https://github.com/AlexAegis/advent-of-code).
 
