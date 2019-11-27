@@ -1,6 +1,6 @@
 use clap::{App, Arg};
 use serde::{de::DeserializeOwned, Serialize};
-use std::{cmp::Eq, collections::HashMap, error::Error, hash::Hash, path::Path};
+use std::{cmp::Eq, collections::HashMap, error::Error, fmt::Debug, hash::Hash, path::Path};
 
 use crate::Cpt;
 
@@ -10,9 +10,9 @@ pub trait FromArgs: Default {
 
 impl<K, V, S> FromArgs for Cpt<K, V, S>
 where
-	K: Hash + Eq + DeserializeOwned + Serialize,
-	V: Hash + Eq + DeserializeOwned + Serialize,
-	S: std::hash::BuildHasher + Default,
+	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	S: std::hash::BuildHasher + Default + Debug,
 {
 	#[cfg_attr(tarpaulin, skip)]
 	fn from_args(defaults: Option<&Cpt<K, V, S>>) -> Result<Cpt<K, V, S>, Box<dyn Error>> {

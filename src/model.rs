@@ -5,6 +5,7 @@ use std::{
 	cmp::Eq,
 	collections::{hash_map::RandomState, HashMap},
 	error::Error,
+	fmt::Debug,
 	fs,
 	fs::{DirBuilder, File},
 	hash::{BuildHasher, Hash},
@@ -15,10 +16,11 @@ use std::{
 
 use walkdir::WalkDir;
 
+#[derive(Debug)]
 pub struct Cpt<K, V, S = RandomState>
 where
-	K: Hash + Eq + DeserializeOwned + Serialize,
-	V: Hash + Eq + DeserializeOwned + Serialize,
+	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
 	S: std::hash::BuildHasher + Default,
 {
 	pub from: String,
@@ -30,9 +32,9 @@ where
 
 impl<K, V, S> Cpt<K, V, S>
 where
-	K: Hash + Eq + DeserializeOwned + Serialize,
-	V: Hash + Eq + DeserializeOwned + Serialize,
-	S: std::hash::BuildHasher + Default,
+	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	S: std::hash::BuildHasher + Default + Debug,
 {
 	pub fn new(from: String, to: String) -> Self {
 		Cpt {
@@ -169,8 +171,8 @@ where
 
 impl<K, V, S> Default for Cpt<K, V, S>
 where
-	K: Hash + Eq + DeserializeOwned + Serialize,
-	V: Hash + Eq + DeserializeOwned + Serialize,
+	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
+	V: Hash + Eq + DeserializeOwned + Serialize + Debug,
 	S: BuildHasher + Default,
 {
 	fn default() -> Self {
@@ -178,7 +180,7 @@ where
 			from: ".".to_string(),
 			to: "./target".to_string(),
 			data: None,
-			dry: true,
+			dry: false,
 			force: false,
 		}
 	}
