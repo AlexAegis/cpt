@@ -1,6 +1,4 @@
-use cpt::args;
-use cpt::{cp, cpt};
-
+use cpt::{args::FromArgs, cp, cpt, Cpt};
 use std::fs;
 
 use assert_cmd::prelude::*;
@@ -26,14 +24,14 @@ fn do_assert(to: &str) -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn args_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
-	let from_og = "./example";
-	let to_og = "./example_to_args";
+	let from_og = "./example".to_string();
+	let to_og = "./example_to_args".to_string();
 
-	let (from, to, data) = args::<String, String>(from_og, to_og)?;
+	let c = Cpt::<String, String>::from_args(Some(&Cpt::new(from_og.clone(), to_og.clone())))?;
 
-	assert_eq!(from_og, from);
-	assert_eq!(to_og, to);
-	assert_eq!(data, None);
+	assert_eq!(c.from, from_og);
+	assert_eq!(c.to, to_og);
+	assert_eq!(c.data, None);
 	Ok(())
 }
 
@@ -43,7 +41,7 @@ fn cpt_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let to = "./example_to_cpt";
 	let mut data = std::collections::HashMap::<String, String>::new();
 	data.insert("foo".to_string(), "bar".to_string());
-	cpt(from.to_string(), to.to_string(), &data)?;
+	cpt(from.to_string(), to.to_string(), data)?;
 
 	do_assert(to)?;
 
