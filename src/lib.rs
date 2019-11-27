@@ -72,12 +72,13 @@ where
 
 pub type Args<K, V> = (String, String, Option<HashMap<K, V>>);
 
+#[cfg_attr(tarpaulin, skip)]
 pub fn args<K, V>(default_from: &str, default_to: &str) -> Result<Args<K, V>, Box<dyn Error>>
 where
 	K: Hash + Eq + DeserializeOwned,
 	V: Hash + Eq + DeserializeOwned,
 {
-	let m = App::new("mirror-folder")
+	let m = App::new("cpt")
 		.version("1.0.0")
 		.about("Copies one folder structure to another place with files. Also formats templates!")
 		.author("AlexAegis")
@@ -116,6 +117,12 @@ where
 					Err(e) => Err(e.to_string()),
 				})
 				.help("JSON formatted templating data"),
+		)
+		.arg(
+			Arg::with_name("quiet")
+				.short("-q")
+				.long("--quiet")
+				.help("Tarpaulin"),
 		)
 		.get_matches();
 

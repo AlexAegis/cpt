@@ -2,6 +2,7 @@ use cpt::args;
 
 use cpt::{cp, cpt};
 
+#[cfg_attr(tarpaulin, skip)]
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let (from, to, data) = args::<String, String>("", "")?;
 	print!("Copying from {}, to {}", from, to);
