@@ -5,6 +5,7 @@ authors = ["AlexAegis <alexaegis@gmail.com>"]
 license = "MIT"
 edition = "2018"
 repository = "https://github.com/AlexAegis/cpt"
+readme="README.md"
 description = """
 A filesystem tool that will copy a folder structure
 and if there is provided templating data
