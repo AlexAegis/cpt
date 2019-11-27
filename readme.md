@@ -8,6 +8,21 @@ Copies a folder structure and if templating data is supplied then all `.tpl` fil
 
 It does not write over files.
 
+## Install
+
+### As a library
+
+```toml
+[dependencies]
+cpt = "0.2.1"
+```
+
+### As a command line tool
+
+```bash
+cargo install cpt
+```
+
 ## Usage
 
 ### As a library
@@ -25,7 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-### As a command line tool:
+### As a command line tool
 
 ```bash
 cpt ./example ./exampletest --json='{ \"foo\": \"bar\" }'
