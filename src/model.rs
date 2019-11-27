@@ -132,8 +132,7 @@ where
 					if !self.dry {
 						DirBuilder::new().recursive(true).create(&trg)?;
 					}
-				} else if entry.path().is_file() && (!trg.exists() || self.force) {
-					// TODO: Test force mode
+				} else if entry.path().is_file() {
 					let mut content = fs::read_to_string(entry.path())?;
 					if let Some(map) = &self.data {
 						if let Some(e) = trg.extension() {
@@ -144,7 +143,7 @@ where
 							}
 						}
 					}
-					if !self.dry {
+					if !self.dry && (!trg.exists() || self.force) {
 						let mut file = File::create(trg)?;
 						file.write_all(content.as_bytes())?;
 						file.sync_all()?;
