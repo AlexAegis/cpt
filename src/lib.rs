@@ -72,7 +72,7 @@ where
 
 pub type Args<K, V> = (String, String, Option<HashMap<K, V>>);
 
-pub fn args<K, V>() -> Result<Args<K, V>, Box<dyn Error>>
+pub fn args<K, V>(default_from: &str, default_to: &str) -> Result<Args<K, V>, Box<dyn Error>>
 where
 	K: Hash + Eq + DeserializeOwned,
 	V: Hash + Eq + DeserializeOwned,
@@ -87,6 +87,7 @@ where
 				.long("from")
 				.required(true)
 				.index(1)
+				.default_value(default_from)
 				.validator(|s| {
 					if Path::new(&s).exists() {
 						Ok(())
@@ -102,6 +103,7 @@ where
 				.long("to")
 				.required(true)
 				.index(2)
+				.default_value(default_to)
 				.help("The folder where the folder will be placed"),
 		)
 		.arg(

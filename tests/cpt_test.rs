@@ -1,10 +1,12 @@
+use cpt::args;
+use cpt::{cp, cpt};
+
 use std::fs;
 
 use assert_cmd::prelude::*;
 use std::process::Command;
 
-fn do_assert() -> std::result::Result<(), Box<dyn std::error::Error>> {
-	let to = "./example_to";
+fn do_assert(to: &str) -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let bar_path = format!("{}/bar.txt", to);
 
 	assert_eq!(
@@ -24,8 +26,64 @@ fn do_assert() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn args_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
+	let from_og = "./example";
+	let to_og = "./example_to_args";
+
+	let (from, to, data) = args::<String, String>(from_og, to_og)?;
+
+	assert_eq!(from_og, from);
+	assert_eq!(to_og, to);
+	assert_eq!(data, None);
+	Ok(())
+}
+
+#[test]
+fn cpt_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let from = "./example";
-	let to = "./example_to";
+	let to = "./example_to_cpt";
+	let mut data = std::collections::HashMap::<String, String>::new();
+	data.insert("foo".to_string(), "bar".to_string());
+	cpt(from.to_string(), to.to_string(), &data)?;
+
+	do_assert(to)?;
+
+	// Cleanup
+	fs::remove_dir_all(&to)?;
+
+	Ok(())
+}
+
+#[test]
+fn cp_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
+	let from = "./example";
+	let to = "./example_to_cp";
+
+	cp(from.to_string(), to.to_string())?;
+
+	let bar_path = format!("{}/bar.txt.tpl", to);
+
+	assert_eq!(
+		fs::read_to_string(bar_path)?.replace("\r\n", "\n"),
+		"This will become bar: {{foo}}\nAnd this will stay as is: \\{{escaped}}\n"
+	);
+
+	let nontemp_path = format!("{}/foo/non-template.txt", to);
+
+	assert_eq!(
+		fs::read_to_string(nontemp_path)?.replace("\r\n", "\n"),
+		"unused: {{unused}}"
+	);
+
+	// Cleanup
+	fs::remove_dir_all(&to)?;
+
+	Ok(())
+}
+
+#[test]
+fn bin_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
+	let from = "./example";
+	let to = "./example_to_args";
 
 	Command::cargo_bin("cpt")
 		.unwrap()
@@ -33,7 +91,7 @@ fn args_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 		.assert()
 		.success();
 
-	do_assert()?;
+	do_assert(to)?;
 	// Cleanup
 	fs::remove_dir_all(&to)?;
 
