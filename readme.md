@@ -8,7 +8,46 @@ Copies a folder structure and if templating data is supplied then all `.tpl` fil
 
 It does not write over existing files, unless the `-f` or `--force` flag is present.
 
-Folder names also support Handlebars syntaxs, here every new line in the name means a different path calculated from there.
+Folder and file names also support Handlebars syntax, here every new line in the name means a different path calculated from there.
+
+For example, with this data
+
+```json
+{
+	"dir": "dir1\ndir2",
+	"file": "file1.txt.tpl\nfile2.txt.tpl"
+}
+```
+
+from this folder
+
+```bash
+./
+./bar.txt.tpl
+./{{dir}}/{{file}}
+./{{dir}}/non-template.txt
+```
+
+these output files and folders will be produced
+
+```bash
+./
+./bar.txt
+./dir1
+./dir2
+./dir1/non-template.txt
+./dir2/non-template.txt
+./dir1/file1.txt
+./dir2/file1.txt
+./dir1/file2.txt
+./dir2/file2.txt
+```
+
+You can try this out with this command after downloading this repository (Given that you have [Rust and Cargo](https://www.rust-lang.org/) installed):
+
+```bash
+cargo run ./templates/example_tpl_dir ./templates/example_to --json='{ \"foo\": \"bar\", \"dir\": \"dir1\ndir2\", \"file\": \"file1.txt.tpl\nfile2.txt.tpl\" }'
+```
 
 ## Install
 
