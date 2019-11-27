@@ -19,7 +19,7 @@ where
 		let plain_def = Self::default();
 		let def = defaults.unwrap_or(&plain_def);
 		let m = App::new("cpt")
-			.version("1.0.0")
+			.version("0.3.0")
 			.about(
 				"Copies one folder structure to another place with files. Also formats templates!",
 			)

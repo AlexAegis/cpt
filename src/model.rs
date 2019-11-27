@@ -147,20 +147,28 @@ where
 						DirBuilder::new().recursive(true).create(&trg)?;
 					}
 				} else if entry.path().is_file() {
-					let mut content = fs::read_to_string(entry.path())?;
-					if let Some(map) = &self.data {
-						if let Some(e) = trg.extension() {
-							// Use only tpl files as templates
-							if e.to_str().ok_or("Error")? == "tpl" {
-								trg.set_extension(""); // And strip the extension
-								content = hb.render_template(&content, &map)?;
+					if let Ok(mut content) = fs::read_to_string(entry.path()) {
+						if let Some(map) = &self.data {
+							if let Some(e) = trg.extension() {
+								// Use only tpl files as templates
+								if e.to_str().ok_or("Error")? == "tpl" {
+									trg.set_extension(""); // And strip the extension
+									content = hb.render_template(&content, &map)?;
+								}
 							}
 						}
-					}
-					if !self.dry && (!trg.exists() || self.force) {
-						let mut file = File::create(trg)?;
-						file.write_all(content.as_bytes())?;
-						file.sync_all()?;
+						if !self.dry && (!trg.exists() || self.force) {
+							let mut file = File::create(trg)?;
+							file.write_all(content.as_bytes())?;
+							file.sync_all()?;
+						}
+					} else {
+						let content = fs::read(entry.path())?;
+						if !self.dry && (!trg.exists() || self.force) {
+							let mut file = File::create(trg)?;
+							file.write_all(content.as_slice())?;
+							file.sync_all()?;
+						}
 					}
 				}
 			}

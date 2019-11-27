@@ -6,7 +6,7 @@
 
 Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebars](https://github.com/wycats/handlebars.js/) and the `.tpl` file extension will then be stripped.
 
-It does not write over existing files.
+It does not write over existing files, unless the `-f` or `--force` flag is present.
 
 Folder names also support Handlebars syntaxs, here every new line in the name means a different path calculated from there.
 
@@ -29,16 +29,37 @@ cargo install cpt
 
 ### As a library
 
+Using shorthands
+
 ```rust
 use cpt::cpt;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-	let from = String::from("./example");
+	let from = String::from("./templates/example");
 	let to = String::from("./example_to");
 	let mut data = std::collections::HashMap::<String, String>::new();
 	data.insert("foo".to_string(), "bar".to_string());
-	cpt(from, to, &data)?;
-	Ok(())
+
+	cpt(from, to, data) // cp(from, to) to use without templating
+}
+```
+
+Using the builder
+
+```rust
+use cpt::Cpt;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+	let from = String::from("./templates/example");
+	let to = String::from("./example_to");
+	let mut data = std::collections::HashMap::<String, String>::new();
+	data.insert("foo".to_string(), "bar".to_string());
+
+	Cpt::new(from, to)
+		.set_force(true)
+		.set_dry(false)
+		.set_data(data)
+		.execute()
 }
 ```
 
