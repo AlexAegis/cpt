@@ -59,7 +59,7 @@ cargo run ./templates/example_tpl_dir ./templates/example_to --json='{ \"file2\"
 
 ```toml
 [dependencies]
-cpt = "0.3.0"
+cpt = "0.4.0"
 ```
 
 ### As a command line tool
@@ -119,7 +119,7 @@ In short, this is invalid: `--json='{ \"foo\": { \"inner\": \"bar\" } }'`
 ```bash
 cpt --help
 
-cpt 0.3.0
+cpt 0.4.0
 AlexAegis
 Copies one folder structure to another place with files. Also formats templates!
 

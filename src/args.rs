@@ -4,6 +4,7 @@ use std::{cmp::Eq, collections::HashMap, error::Error, fmt::Debug, hash::Hash, p
 
 use crate::{Cpt, StringOrVecString};
 
+const VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 pub trait FromArgs: Default {
 	fn from_args(defaults: Option<&Self>) -> Result<Self, Box<dyn Error>>;
 }
@@ -19,7 +20,7 @@ where
 		let plain_def = Self::default();
 		let def = defaults.unwrap_or(&plain_def);
 		let m = App::new("cpt")
-			.version("0.3.0")
+			.version(VERSION.unwrap_or("unknown"))
 			.about(
 				"Copies one folder structure to another place with files. Also formats templates!",
 			)
