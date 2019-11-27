@@ -1,4 +1,5 @@
 use handlebars::Handlebars;
+use serde::Serializer;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{
 	cmp,
@@ -16,11 +17,24 @@ use std::{
 
 use walkdir::WalkDir;
 
-#[derive(Debug, Hash, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Hash, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum StringOrVecString {
 	Str(String),
 	VecStr(Vec<String>),
+}
+
+impl Serialize for StringOrVecString {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: Serializer,
+	{
+		let s: String = match self {
+			StringOrVecString::Str(s) => s.to_string(),
+			StringOrVecString::VecStr(v) => v.join("\n"),
+		};
+		serializer.serialize_str(&s)
+	}
 }
 
 impl Into<StringOrVecString> for String {
@@ -123,7 +137,6 @@ where
 						hb.render_template(&c, &map)
 							.unwrap_or_else(|_| c.to_string())
 					})
-					.map(|c| c.trim_matches(|c| c == '[' || c == ']').replace(", ", "\n")) // Serialized array
 					.map(|c| c.lines().map(|l| l.to_string()).collect::<Vec<String>>()) // Newline separation
 					.fold(vec![], |acc: Vec<Vec<String>>, n| {
 						let acc_l = acc.len();

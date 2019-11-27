@@ -8,14 +8,16 @@ Copies a folder structure and if templating data is supplied then all `.tpl` fil
 
 It does not write over existing files, unless the `-f` or `--force` flag is present.
 
-Folder and file names also support Handlebars syntax, here every new line in the name means a different path calculated from there.
+Folder and file names also support Handlebars syntax. (Altough you can't use `\` and many others in folder names so you are limited). After applying the template into the file
+
+here every new line in the name means a different path calculated from there.
 
 For example, with this data
 
 ```json
 {
 	"dir": "dir1\ndir2",
-	"file": "file1.txt.tpl\nfile2.txt.tpl"
+	"file": ["file1.txt.tpl", "file2.txt.tpl"]
 }
 ```
 
