@@ -72,14 +72,26 @@ where
 
 	pub fn execute(self) -> Result<(), Box<dyn Error>> {
 		let hb = Handlebars::new();
-		for entry in WalkDir::new(self.from).into_iter().filter_map(|e| e.ok()) {
+		let from_buf = PathBuf::from(&self.from);
+		for entry in WalkDir::new(&self.from).into_iter().filter_map(|e| e.ok()) {
 			let truncated_target = PathBuf::from(entry.path())
 				.components()
-				.skip_while(|c| c.as_os_str() == ".")
-				.skip(1)
+				.map(Some)
+				.zip(
+					from_buf
+						.components()
+						.map(Some)
+						.chain(std::iter::repeat(None))
+						.take(entry.path().components().count()),
+				)
+				.skip_while(|(e, f)| match (&e, &f) {
+					(Some(a), Some(b)) => a.as_os_str() == b.as_os_str(),
+					_ => false,
+				})
+				.filter_map(|(e, _)| e)
 				.collect::<PathBuf>();
-			let target = Path::new(&self.to).join(&truncated_target);
 
+			let target = Path::new(&self.to).join(&truncated_target);
 			let targets: Vec<PathBuf>;
 
 			if let Some(map) = &self.data {

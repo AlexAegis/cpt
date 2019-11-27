@@ -81,7 +81,7 @@ fn cp_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 #[test]
 fn bin_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let from = "./templates/example";
-	let to = "./templates/example_to_args";
+	let to = "./templates/example_to_bin";
 
 	Command::cargo_bin("cpt")
 		.unwrap()
