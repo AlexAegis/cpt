@@ -81,16 +81,8 @@ where
 				.components()
 				.map(|c| c.as_os_str().to_string_lossy().into_owned())
 				.map(|c| {
-					println!("component before template {:?}", c);
-					c
-				})
-				.map(|c| {
 					hb.render_template(&c, &map)
 						.unwrap_or_else(|_| c.to_string())
-				})
-				.map(|c| {
-					println!("component after template {:?}", c);
-					c
 				})
 				.map(|c| c.lines().map(|l| l.to_string()).collect::<Vec<String>>())
 				.fold(vec![], |acc: Vec<Vec<String>>, n| {
@@ -106,15 +98,19 @@ where
 					let b_l = cmp::max(n_l, 1) * cmp::max(acc_l, 1);
 					b.resize_with(b_l, || vec![]);
 
-					std::iter::repeat(n)
-						.flatten()
-						.take(b.len())
-						.enumerate()
-						.for_each(|(i, ne)| {
-							if let Some(e) = b.get_mut((i + n_l) % b_l) {
-								e.push(ne);
-							}
-						});
+					std::iter::repeat(
+						n.into_iter()
+							.map(|ne| std::iter::repeat(ne).take(cmp::max(acc_l, 1))),
+					)
+					.flatten()
+					.flatten()
+					.take(b.len())
+					.enumerate()
+					.for_each(|(i, ne)| {
+						if let Some(e) = b.get_mut((i) % b_l) {
+							e.push(ne);
+						}
+					});
 
 					b
 				})
