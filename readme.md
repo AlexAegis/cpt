@@ -6,7 +6,7 @@
 
 Copies a folder structure and if templating data is supplied then all `.tpl` files will be converted using [Handlebars](https://github.com/wycats/handlebars.js/) and the `.tpl` file extension will then be stripped.
 
-It does not write over existing files, unless the `-f` or `--force` flag is present.
+It does not write over existing files unless the `-f` or `--force` flag is present.
 
 It can be run `dry` which will skip any file writes, but still logs what would it do. Use the `-d` or `--dry` flags.
 
@@ -59,7 +59,7 @@ cargo run ./templates/example_tpl_dir ./templates/example_to --json='{ \"file2\"
 
 ```toml
 [dependencies]
-cpt = "0.4.0"
+cpt = "0.4.1"
 ```
 
 ### As a command line tool
@@ -112,14 +112,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 cpt ./example ./exampletest --json='{ \"foo\": \"bar\" }'
 ```
 
-From the command line it can only accept jsons with a depth of 1.
-
-In short, this is invalid: `--json='{ \"foo\": { \"inner\": \"bar\" } }'`
+Using help:
 
 ```bash
 cpt --help
 
-cpt 0.4.0
+cpt 0.4.1
 AlexAegis
 Copies one folder structure to another place with files. Also formats templates!
 
@@ -141,9 +139,25 @@ ARGS:
     <to>      The folder where the folder will be placed [default: ./target]
 ```
 
+## Valid input
+
+The serializer only supports strings and arrays. A valid TypeScript type of the input would look like this:
+
+```ts
+interface Input {
+	[key: string]: string | string[];
+}
+```
+
 ## Motivation
 
 I made this for my [Advent of Code](https://www.adventofcode.com) project scaffolder which you can find in my [AoC repo](https://github.com/AlexAegis/advent-of-code).
+
+## What's next?
+
+For this to be a little more than just a tiny toy project the next step would be to implement context-aware templating. If we think of a template as a tree where the leaves are the contents of a file, and their parents are the names of their files, then it would be nice to pass some context to these nodes about their parents and their positions.
+
+This would allow automatic indexing for example.
 
 ## Used libraries
 
@@ -152,6 +166,6 @@ I made this for my [Advent of Code](https://www.adventofcode.com) project scaffo
 -   [Walkdir](https://github.com/BurntSushi/walkdir)
     > Recursive directory walker
 -   [Clap](https://github.com/clap-rs/clap)
-    > Command line arguments parser
+    > Command-line arguments parser
 -   [Serde](https://github.com/serde-rs/serde)
     > Serializer, deserializer. Here used for [JSON](http://www.json.org/) parsing

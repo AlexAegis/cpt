@@ -137,6 +137,10 @@ jobs:
                   toolchain: ${{ matrix.rust }}
                   override: true
             - uses: actions-rs/cargo@v1
+              with:
+                  command: login
+                  args: ${{ secrets.crates_token }}
+            - uses: actions-rs/cargo@v1
               continue-on-error: true
               with:
                   command: publish
