@@ -1,7 +1,11 @@
 {
 	"editor.formatOnSave": true,
-	"editor.autoIndent": true,
-	"editor.quickSuggestions": true,
+	"editor.autoIndent": "full",
+	"editor.quickSuggestions": {
+		"comments": "on",
+		"strings": "on",
+		"other": "on"
+	},
 	"editor.tabSize": 4,
 	"material-icon-theme.folders.associations": {
 		"rust": "delta",

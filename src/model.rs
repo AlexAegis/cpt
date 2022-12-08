@@ -1,15 +1,10 @@
 use handlebars::Handlebars;
-use serde::Serializer;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{
 	cmp,
-	cmp::{Eq, PartialEq},
-	collections::{hash_map::RandomState, HashMap},
 	error::Error,
 	fmt::Debug,
 	fs,
 	fs::{DirBuilder, File},
-	hash::{BuildHasher, Hash},
 	io::Write,
 	path::{Path, PathBuf, MAIN_SEPARATOR},
 	vec::Vec,
@@ -17,63 +12,21 @@ use std::{
 
 use walkdir::WalkDir;
 
-#[derive(Debug, Hash, Deserialize, PartialEq, Eq)]
-#[serde(untagged)]
-pub enum StringOrVecString {
-	Str(String),
-	VecStr(Vec<String>),
-}
-
-impl Serialize for StringOrVecString {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: Serializer,
-	{
-		let s: String = match self {
-			StringOrVecString::Str(s) => s.to_string(),
-			StringOrVecString::VecStr(v) => v.join("\n"),
-		};
-		serializer.serialize_str(&s)
-	}
-}
-
-impl Into<StringOrVecString> for String {
-	fn into(self) -> StringOrVecString {
-		StringOrVecString::Str(self)
-	}
-}
-
-impl Into<StringOrVecString> for Vec<String> {
-	fn into(self) -> StringOrVecString {
-		StringOrVecString::VecStr(self)
-	}
-}
-
 #[derive(Debug)]
-pub struct Cpt<K = String, V = StringOrVecString, S = RandomState>
-where
-	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
-	V: Hash + Eq + DeserializeOwned + Serialize + Debug + Into<StringOrVecString>,
-	S: std::hash::BuildHasher + Default,
-{
+pub struct Cpt {
 	pub from: String,
 	pub to: String,
-	pub data: Option<Box<HashMap<K, V, S>>>,
+	pub data: Option<Box<serde_json::Value>>,
 	pub dry: bool,
 	pub force: bool,
 }
 
-impl<K, V, S> Cpt<K, V, S>
-where
-	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
-	V: Hash + Eq + DeserializeOwned + Serialize + Debug + Into<StringOrVecString>,
-	S: std::hash::BuildHasher + Default + Debug,
-{
+impl Cpt {
 	pub fn new(from: String, to: String) -> Self {
 		Cpt {
 			from,
 			to,
-			..Cpt::<K, V, S>::default()
+			..Cpt::default()
 		}
 	}
 
@@ -95,12 +48,12 @@ where
 		self
 	}
 
-	pub fn set_data(mut self, data: HashMap<K, V, S>) -> Self {
+	pub fn set_data(mut self, data: serde_json::Value) -> Self {
 		self.data = Some(Box::from(data));
 		self
 	}
 
-	pub fn try_data(mut self, data: Option<Box<HashMap<K, V, S>>>) -> Self {
+	pub fn try_data(mut self, data: Option<Box<serde_json::Value>>) -> Self {
 		self.data = data;
 		self
 	}
@@ -147,7 +100,7 @@ where
 							.collect::<Vec<Vec<String>>>();
 
 						let b_l = cmp::max(n_l, 1) * cmp::max(acc_l, 1);
-						b.resize_with(b_l, || vec![]);
+						b.resize_with(b_l, Vec::new);
 
 						std::iter::repeat(
 							n.into_iter()
@@ -207,12 +160,7 @@ where
 	}
 }
 
-impl<K, V, S> Default for Cpt<K, V, S>
-where
-	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
-	V: Hash + Eq + DeserializeOwned + Serialize + Debug + Into<StringOrVecString>,
-	S: BuildHasher + Default,
-{
+impl Default for Cpt {
 	fn default() -> Self {
 		Cpt {
 			from: ".".to_string(),

@@ -27,11 +27,11 @@ fn args_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let from_og = "./templates/example".to_string();
 	let to_og = "./templates/example_to_args".to_string();
 
-	let c = Cpt::<String, String>::from_args(Some(&Cpt::new(from_og.clone(), to_og.clone())))?;
+	let cpt = Cpt::from_args(Some(&Cpt::new(from_og.clone(), to_og.clone())))?;
 
-	assert_eq!(c.from, from_og);
-	assert_eq!(c.to, to_og);
-	assert_eq!(c.data, None);
+	assert_eq!(cpt.from, from_og);
+	assert_eq!(cpt.to, to_og);
+	assert_eq!(cpt.data, None);
 	Ok(())
 }
 
@@ -39,9 +39,16 @@ fn args_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 fn cpt_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let from = "./templates/example";
 	let to = "./templates/example_to_cpt";
-	let mut data = std::collections::HashMap::<String, String>::new();
-	data.insert("foo".to_string(), "bar".to_string());
-	cpt(from.to_string(), to.to_string(), data)?;
+	let mut data = serde_json::Map::new();
+	data.insert(
+		"foo".to_string(),
+		serde_json::Value::String("bar".to_string()),
+	);
+	cpt(
+		from.to_string(),
+		to.to_string(),
+		serde_json::Value::Object(data),
+	)?;
 
 	do_assert(to)?;
 
@@ -85,7 +92,7 @@ fn bin_test() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 	Command::cargo_bin("cpt")
 		.unwrap()
-		.args(&[from, to, r#"--json={ "foo": "bar" }"#])
+		.args([from, to, "--json", r#"{ "foo": "bar" }"#])
 		.assert()
 		.success();
 

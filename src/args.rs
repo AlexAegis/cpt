@@ -1,111 +1,78 @@
-use clap::{App, Arg};
-use serde::{de::DeserializeOwned, Serialize};
-use std::{cmp::Eq, collections::HashMap, error::Error, fmt::Debug, hash::Hash, path::Path};
+use clap::{Arg, Command};
+use std::error::Error;
 
-use crate::{Cpt, StringOrVecString};
+use crate::Cpt;
 
 const VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
+
 pub trait FromArgs: Default {
 	fn from_args(defaults: Option<&Self>) -> Result<Self, Box<dyn Error>>;
 }
 
-impl<K, V, S> FromArgs for Cpt<K, V, S>
-where
-	K: Hash + Eq + DeserializeOwned + Serialize + Debug,
-	V: Hash + Eq + DeserializeOwned + Serialize + Debug + Into<StringOrVecString>,
-	S: std::hash::BuildHasher + Default + Debug,
-{
+impl FromArgs for Cpt {
 	#[cfg_attr(tarpaulin, skip)]
-	fn from_args(defaults: Option<&Cpt<K, V, S>>) -> Result<Cpt<K, V, S>, Box<dyn Error>> {
+	fn from_args(defaults: Option<&Cpt>) -> Result<Cpt, Box<dyn Error>> {
 		let plain_def = Self::default();
 		let def = defaults.unwrap_or(&plain_def);
-		let m = App::new("cpt")
+		let m = Command::new("cpt")
 			.version(VERSION.unwrap_or("unknown"))
 			.about(
 				"Copies one folder structure to another place with files. Also formats templates!",
 			)
 			.author("AlexAegis")
 			.arg(
-				Arg::with_name("from")
-					.short("f")
-					.long("from")
-					.required(true)
+				Arg::new("from")
 					.index(1)
-					.default_value(&def.from)
-					.validator(|s| {
-						if Path::new(&s).exists() {
-							Ok(())
-						} else {
-							Err("Source folder not exists".to_string())
-						}
-					})
 					.help("The folder that will be copied"),
 			)
 			.arg(
-				Arg::with_name("to")
-					.short("t")
-					.long("to")
-					.required(true)
+				Arg::new("to")
 					.index(2)
-					.default_value(&def.to)
 					.help("The folder where the folder will be placed"),
 			)
 			.arg(
-				Arg::with_name("json")
-					.short("-j")
-					.long("--json")
-					.takes_value(true)
-					.validator(|s| match serde_json::from_str::<HashMap<K, V>>(&s) {
-						Ok(_) => Ok(()),
-						Err(e) => Err(e.to_string()),
-					})
+				Arg::new("json")
+					.short('j')
+					.long("json")
+					.value_parser(clap::value_parser!(String))
 					.help("JSON formatted templating data"),
 			)
 			.arg(
-				Arg::with_name("dry")
-					.short("-d")
-					.long("--dry")
+				Arg::new("dry")
+					.short('d')
+					.long("dry")
+					.action(clap::ArgAction::SetTrue)
 					.help("If set, nothing will be written to the disk"),
 			)
 			.arg(
-				Arg::with_name("force")
-					.short("-f")
-					.long("--force")
+				Arg::new("force")
+					.short('f')
+					.long("force")
+					.action(clap::ArgAction::SetTrue)
 					.help("If set, files can be overwritten in the target folder"),
 			)
-			.arg(
-				Arg::with_name("quiet")
-					.short("-q")
-					.long("--quiet")
-					.help("Tarpaulin"),
-			)
+			.arg(Arg::new("quiet").short('q').long("quiet").help("Tarpaulin"))
 			.get_matches();
 
-		let from = m.args["from"]
-			.vals
-			.first()
-			.ok_or("No from specified")?
-			.to_str()
-			.ok_or("Invalid string")?;
-		let to = m.args["to"]
-			.vals
-			.first()
-			.ok_or("No to specified")?
-			.to_str()
-			.ok_or("Invalid string")?;
+		let from = m.get_one("from").unwrap_or(&def.from);
+		let to = m.get_one("to").unwrap_or(&def.to);
+		let dry = m.get_flag("dry");
+		let force = m.get_flag("force");
 
-		let dry = m.args.get("dry").is_some();
-		let force = m.args.get("force").is_some();
+		// if !Path::new(&from).exists() {
+		// 	panic!("from doesn't exist")
+		// }
 
-		let mut data_map = None;
-		if m.args.contains_key("json") {
-			if let Some(d) = m.args["json"].vals.first() {
-				let data_str = d.to_str().ok_or("Invalid string")?;
-				data_map.replace(Box::from(serde_json::from_str::<HashMap<K, V, S>>(
-					&data_str,
-				)?));
-			}
-		}
+		let data_map = m
+			.get_one::<String>("json")
+			.map(|i| i.trim())
+			.map(|data_str| {
+				println!("data: {:?}", data_str);
+				Box::new(
+					serde_json::from_str::<serde_json::Value>(data_str)
+						.expect("--json is not valid json"),
+				)
+			});
 
 		Ok(Cpt::new(from.to_string(), to.to_string())
 			.try_data(data_map)
