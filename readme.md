@@ -1,6 +1,10 @@
 # cpt
 
-[![Build Status](https://travis-ci.com/AlexAegis/cpt.svg?branch=master)](https://travis-ci.com/AlexAegis/cpt) [![Crates.io](https://img.shields.io/crates/v/cpt)](https://crates.io/crates/cpt) [![Docs.rs](https://docs.rs/mio/badge.svg)](https://docs.rs/cpt) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3091464ea5954b7b813b6a1152831a84)](https://www.codacy.com/manual/AlexAegis/cpt?utm_source=github.com&utm_medium=referral&utm_content=AlexAegis/cpt&utm_campaign=Badge_Grade) [![Coverage Status](https://coveralls.io/repos/github/AlexAegis/cpt/badge.svg?branch=master)](https://coveralls.io/github/AlexAegis/cpt?branch=master)
+[![Rust CI](https://github.com/AlexAegis/cpt/actions/workflows/rust.yml/badge.svg)](https://github.com/AlexAegis/cpt/actions/workflows/rust.yml)
+[![Crates.io](https://img.shields.io/crates/v/cpt)](https://crates.io/crates/cpt)
+[![Docs.rs](https://docs.rs/mio/badge.svg)](https://docs.rs/cpt)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3091464ea5954b7b813b6a1152831a84)](https://www.codacy.com/manual/AlexAegis/cpt?utm_source=github.com&utm_medium=referral&utm_content=AlexAegis/cpt&utm_campaign=Badge_Grade)
+[![Coverage Status](https://coveralls.io/repos/github/AlexAegis/cpt/badge.svg?branch=master)](https://coveralls.io/github/AlexAegis/cpt?branch=master)
 
 ## Copy with Templates
 
@@ -12,7 +16,7 @@ It can be run `dry` which will skip any file writes, but still logs what would i
 
 Folder and file names also support Handlebars syntax. (Although you can't use `\` and many others in folder names so you are limited). After applying the template into the file/folder names, `\n` characters (since they invalid anyway) will be handled specially. At every line break the created folder structure branches off. The content of each of them will be identical.
 
-#### For example, with this data:
+#### For example, with this data
 
 > The second line will be serialized as "file1.txt.tpl\nfile2.txt.tpl"
 
@@ -78,12 +82,12 @@ Using shorthands
 use cpt::cpt;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-	let from = String::from("./templates/example");
-	let to = String::from("./example_to");
-	let mut data = std::collections::HashMap::<String, String>::new();
-	data.insert("foo".to_string(), "bar".to_string());
+ let from = String::from("./templates/example");
+ let to = String::from("./example_to");
+ let mut data = std::collections::HashMap::<String, String>::new();
+ data.insert("foo".to_string(), "bar".to_string());
 
-	cpt(from, to, data) // cp(from, to) to use without templating
+ cpt(from, to, data) // cp(from, to) to use without templating
 }
 ```
 
@@ -93,16 +97,16 @@ Using the builder
 use cpt::Cpt;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-	let from = String::from("./templates/example");
-	let to = String::from("./example_to");
-	let mut data = std::collections::HashMap::<String, String>::new();
-	data.insert("foo".to_string(), "bar".to_string());
+ let from = String::from("./templates/example");
+ let to = String::from("./example_to");
+ let mut data = std::collections::HashMap::<String, String>::new();
+ data.insert("foo".to_string(), "bar".to_string());
 
-	Cpt::new(from, to)
-		.set_force(true)
-		.set_dry(false)
-		.set_data(data)
-		.execute()
+ Cpt::new(from, to)
+  .set_force(true)
+  .set_dry(false)
+  .set_data(data)
+  .execute()
 }
 ```
 
