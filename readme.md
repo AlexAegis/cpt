@@ -1,6 +1,6 @@
 # cpt
 
-[![Rust CI](https://github.com/AlexAegis/cpt/actions/workflows/rust.yml/badge.svg)](https://github.com/AlexAegis/cpt/actions/workflows/rust.yml)
+[![ci](https://github.com/AlexAegis/cpt/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/cpt/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/cpt)](https://crates.io/crates/cpt)
 [![Docs.rs](https://docs.rs/mio/badge.svg)](https://docs.rs/cpt)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3091464ea5954b7b813b6a1152831a84)](https://www.codacy.com/manual/AlexAegis/cpt?utm_source=github.com&utm_medium=referral&utm_content=AlexAegis/cpt&utm_campaign=Badge_Grade)
