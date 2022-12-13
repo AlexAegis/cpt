@@ -63,7 +63,7 @@ cargo run ./templates/example_tpl_dir ./templates/example_to --json='{ \"file2\"
 
 ```toml
 [dependencies]
-cpt = "0.4.1"
+cpt = "0.5.0"
 ```
 
 ### As a command line tool
@@ -121,7 +121,7 @@ Using help:
 ```bash
 cpt --help
 
-cpt 0.4.1
+cpt 0.5.0
 AlexAegis
 Copies one folder structure to another place with files. Also formats templates!
 

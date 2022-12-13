@@ -1,10 +1,26 @@
-on: [push, pull_request]
+name: ci
 
-name: Rust CI
+on:
+    push:
+        branches: "**"
+    pull_request:
+        branches: "**"
+
+env:
+    DEPLOY_ARTIFACT_DIR: "target/doc"
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+    cancel-in-progress: true
 
 jobs:
     check:
-        name: Check
+        name: check
         runs-on: ubuntu-latest
         env:
             RUST_BACKTRACE: full
@@ -23,9 +39,8 @@ jobs:
               with:
                   command: check
                   args: --all
-
     test:
-        name: Test Suite
+        name: test
         runs-on: ubuntu-latest
         env:
             RUST_BACKTRACE: full
@@ -44,9 +59,8 @@ jobs:
               with:
                   command: test
                   args: --all
-
     fmt:
-        name: Rustfmt
+        name: fmt
         runs-on: ubuntu-latest
         env:
             RUST_BACKTRACE: full
@@ -66,9 +80,8 @@ jobs:
               with:
                   command: fmt
                   args: --all -- --check
-
     clippy:
-        name: Clippy
+        name: clippy
         runs-on: ubuntu-latest
         env:
             RUST_BACKTRACE: full
@@ -89,7 +102,7 @@ jobs:
                   command: clippy
                   args: --all -- -D warnings
     docs:
-        name: Docs
+        name: docs
         needs: [test, fmt, clippy]
         runs-on: ubuntu-latest
         env:
@@ -109,18 +122,27 @@ jobs:
               with:
                   command: doc
                   args: --all-features
-            - run: |
-                  cd target/doc
-                  git init
-                  git add .
-                  git -c user.name='ci' -c user.email='ci' commit -m 'Deploy documentation'
-                  git push -f -q https://git:${{ secrets.github_token }}@github.com/${{ github.repository }} HEAD:gh-pages
-    publish:
-        name: Publish
+            - name: setup pages
+              uses: actions/configure-pages@v2
+              if: |
+                  env.DEPLOY_ARTIFACT_DIR != '' &&
+                  github.ref_name == ${{ github.event.repository.default_branch }} &&
+                  github.event_name != 'pull_request'
+            - name: upload artifact
+              uses: actions/upload-pages-artifact@v1
+              if: |
+                  env.DEPLOY_ARTIFACT_DIR != '' &&
+                  github.ref_name == ${{ github.event.repository.default_branch }} &&
+                  github.event_name != 'pull_request'
+              with:
+                  path: ${{ env.DEPLOY_ARTIFACT_DIR }}
+    release:
+        name: release
+        if: |
+            github.ref_name == ${{ github.event.repository.default_branch }} &&
+            github.event_name != 'pull_request'
         needs: [test, fmt, clippy]
         runs-on: ubuntu-latest
-        env:
-            RUST_BACKTRACE: full
         strategy:
             matrix:
                 rust:
